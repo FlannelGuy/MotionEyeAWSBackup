@@ -1,0 +1,120 @@
+Thank you for your interest my MotionEye AWS backup program!
+
+This is my first public git repo so I apologize for any shortcomings.
+I have mainly programmed in Java for years so please only kindly point out my 'non-pythonic' code.
+Feel free to give constructive criticism.
+
+Basic Understanding:
+    This program will first connect to your MotionEye device and create a list of each video file and their parent
+    directory.
+    The parent directories are named after the date they were recorded. I will refer to theses as the 'date directories'
+    Next it will connect to your AWS FTP server that needs to be set up previously (if you don't know how, or are not
+    familiar with linux, I suggest you to follow a separate tutorial online.) and create a list of its local date
+    directories and the videos they contain.
+    Thirdly, it will compare these two lists to determine which videos are on the MotionEye device and the AWS FTP
+    server.
+    Using this information, it will download said files to a local server/whichever computer is hosting this program.
+    Using the same list as above, it will then encrypt, and then upload each of the missing files to the AWS FTP.
+
+Getting Started:
+    0. If you haven't already, run the 'pipenv shell' command to automatically download the dependencies.
+    1. Rename 'config-template.py' to 'config.py' so the its contained variables in the main program can be used.
+    2. If you are testing or running this program on a windows machine, any directory variable that is to be used as the
+     "local server" such as these:
+        temporaryServerFilePath
+        awsKey
+       will need to have their Path objects changed. Currently, all path objects are 'PurePosixPath' objects
+       and should be changed to 'PurePath' objects. You should not need to change any variables in the object
+       initialization, only the object declaration itself. This is be cause simply using 'os.sep' as a file separator
+       will adhere to the OS specific file separator character of the machine the program runs on, and therefore will
+       crash the program once it tries to connect to the MotionEye machine.
+    3. fill in the config file with the variables needed to successfully run the program. They should be mostly self
+       explanatory. For the filepath variables, I suggest using the full filepath instead of relative to main.py.
+       The only exceptions to this would be the the '.pem' or '.ppk' key that you generated for your AWS instance,
+       as well as the '.key' file you will generate to encrypt the videos before uploading. which will be in the next
+       step.
+    4. run the CreateEncryptionKey.py file and the encryption key will be created. no further action should be needed.
+        I recommend commenting out this code afterwards so you don't accidentally overwrite your key later.
+    5. ensure your MotionEye device is set up for FTP transfer. To do so, go to the webpage in your browser that your
+       MotionEye device is hosting. Open the menu in the top left and scroll down to 'Services'. Toggle the following
+       switches to 'on':
+        Enable FTP Server
+        Require FTP Authentication
+        Enable FTP Write Support
+        Enable SSH Server
+       Apply the changes and reboot the MotionEye device if needed.
+
+Further configuration (optional):
+    That is all you should have to do to be able to manually run this program. However if you would like to have this
+    program ran automatically every time a video is created on your MotionEye device, here is how I set up my
+    implementation. This tutorial is assuming that your local server 'in production' is a linux OS, as well as that
+    the local server and the MotionEye Device are on the same network.
+
+    1. In your browser, navigate to the MotionEye webpage that the MotionEye device is hosting. Once there, open the
+       menu on the top left of the screen, scroll down to 'Motion Notifications' and click the arrow to open the sub
+       menu. there toggle 'Run An End Command'. Just below that toggle switch is a text box that you can put the full
+       filename of the bash script included in this project, called 'motioneye.sh'.
+       1-1. The 'motioneye.sh' script will send a 'token' of your choosing to the local server that will soon be
+           configured to listen for it. fill out the file with the proper information. this will be between the '<>'
+           brackets. remove these brackets afterwards, and save your changes.
+       1-2. Using the MotionEye device's FTP server, put that file somewhere in the ftp user's directory, and copy the
+            full path of the file in the before mentioned text box under the 'Run An End Command toggle switch and apply
+            the changes. make sure to change the permissions of the file so its runnable.
+       1-3. Using the local server's firewall software, open TCP/UDP traffic to your desired port, this should match
+            what you entered in the 'motioneye.sh' file. There is no need to do the same on the MotionEye device.
+                1-3-1. if 'nc' is not installed on your local server, install it now with your regular package manager.
+
+    2. Like the other bash script, edit the 'backup.sh' script just like the last one in step 1-1. Ensure that it has
+        execute permissions for the same user or group that will be running it on your local server.
+    3. copy the following files to the one desired directory on your local server:
+        backup.sh
+        config.py
+        filekey.key
+        main.py
+        (AWS FTP login '.pem' key)
+        Pipfile
+        Pipfile.lock
+    4. run 'pipenv shell' in this directory so the dependencies are downloaded to the server.
+    5. now we will set it up so this backup.sh starts listening on the desired port and executes when the right token
+        received by the MotionEye device.
+    6. using a user that can execute scripts in the directory of the script and the script itself, run 'crontab -e'
+        This file that appears lets you run programs at specified times. This interface is a 'vim' like text editor so
+        look up the manual to learn the basics of its use. add this next line in at the end of the file on its own line:
+        @reboot /usr/bin/screen -dmS backup-screen /<Full_path_to_script>/backup.sh
+        replace the '<>' and whats in them with the full path the where you put the script.
+        save this while not in any edit mode and type in ":wq!" without the quotes, hitting enter.
+        6-2. if you don't have 'screen' installed, go ahead and do that now with your regular package manager.
+    7. restart your local server
+
+    That is all you need to do to set main.py to run on your local server after a video file is created on your
+    MotionEye device.
+
+Explanation:
+    Before going through the whole program, here is some context for step 6. The line added in step 6 to the 'crontab'
+    file configured your server to run the backup.sh script in a virtual terminal, whenever the server machine starts.
+    this command utilizes 'screen' as the virtual terminal and names it 'backup-screen'. You can change the name by
+    editing it in the crontab file again. screen allows you to connect to this virtual terminal after logging into a
+    console on the local server, by running 'screen -r backup-screen', and disconnecting with 'ctrl + a + d'.
+    This will then show you the output of the python program.
+    The 'backup.sh' script will listen forever on the desired port, waiting for the signal token from the
+    MotionEye device. once the python script is finished, it will continue to wait until the next time a signal is
+    received.
+
+Walk Through:
+    Once a video file is created on the MotionEye device (due to motion detection or other configured settings) the
+    motioneye.sh script is ran on the same device and sends a designated text 'token'. The local server is constantly
+    listening for this token on a specified port. as configured in the script, once the local server receives this
+    token, it changes the working directory to that of the program files including main.py. main.py is ran, where it
+    connects to the MotionEye device and generates a list of all the video files and their parent directories, which
+    the directory designates the date the contained videos were generated.
+
+    Next the program will log into the AWS SFTP server and collects what 'date directories' and videos are already on
+    the AWS filesystem. With these two lists, the program compares the two and generates a third list of their
+    differences. Using this third list, it creates directories on the local server to replicate the directory structure
+    on the MotionEye device, and downloads each video into their respective date directory.
+
+    Lastly, the program encrypts each file with the generated '.key' file, just before it uploads it to the AWS SFTP.
+    the same directory structure is used as the local server.
+
+
+
