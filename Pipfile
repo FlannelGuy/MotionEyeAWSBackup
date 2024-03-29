@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+google-api-python-client = "*"
+oauth2client = "*"
+drive = "*"
+libmagic = "*"
+pandas = "*"
+pydrive = "*"
+selenium = "*"
+geckodriver-autoinstaller = "*"
+pyftpdlib = "*"
+pysftp = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
