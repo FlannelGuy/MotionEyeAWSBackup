@@ -84,7 +84,7 @@ if __name__ == '__main__':
                                                           getDirectories(motionEyeFtp.listdir()))
     # collect names of aws FTP directories and their video files
     print("getting AWS directory and filenames.")
-    awssftp = pysftp.Connection(host=Config.awsHostname, username=Config.awsFtpUsername, private_key=Config.awsKey,
+    awssftp = pysftp.Connection(host=Config.awsFtpHostname, username=Config.awsFtpUsername, private_key=Config.awsKey,
                                 cnopts=cnopts)
     awssftp.cwd(Config.awsRootDirectory)
 
