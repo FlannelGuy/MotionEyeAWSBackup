@@ -6,7 +6,9 @@ class Config:
     motionEyeLocalFtpFilePath = R""
     temporaryServerFilePath = R""
     awsRootDirectory = R""
-    awsHostname = ""
-    awsUsername = ""
+    awsFtpHostname = ""
+    awsFtpUsername = ""
     awsKey = R""
     videoEncryptionKey = R""
+    videoFileType = ""
+
