@@ -20,7 +20,7 @@ def getDirectories(rootDirectories):
 def getDirectoriesAndFiles(sftp, rootDirectory, variableDirectories):
     tempFilesAndParentDirectory = []
     for directory in variableDirectories:
-        sftp.cwd(PurePosixPath(rootDirectory).joinpath(directory))
+        sftp.cwd(PurePosixPath(rootDirectory).joinpath(directory).__str__())
 
         for file in sftp.listdir():
             if file.endswith(Config.videoFileType):
