@@ -20,7 +20,7 @@ def getDirectories(rootDirectories):
 def getDirectoriesAndFiles(sftp, rootDirectory, variableDirectories):
     tempFilesAndParentDirectory = []
     for directory in variableDirectories:
-        sftp.cwd(PurePosixPath(rootDirectory).joinpath(directory))
+        sftp.cwd(PurePosixPath(rootDirectory).joinpath(directory).__str__())
 
         for file in sftp.listdir():
             if file.endswith(Config.videoFileType):
@@ -47,27 +47,6 @@ def encryptFile(originalFile):
     # writing the encrypted data
     with open(originalFile, 'wb') as encrypted_file:
         encrypted_file.write(encrypted)
-
-
-def decryptFile(originalFile):
-    # get key
-    with open(Config.videoEncryptionKey, 'rb') as filekey:
-        key = filekey.read()
-
-    # using the key
-    fernet = Fernet(key)
-
-    # opening the encrypted file
-    with open(originalFile, 'rb') as enc_file:
-        encrypted = enc_file.read()
-
-    # decrypting the file
-    decrypted = fernet.decrypt(encrypted)
-
-    # opening the file in write mode and
-    # writing the decrypted data
-    with open(originalFile, 'wb') as dec_file:
-        dec_file.write(decrypted)
 
 
 if __name__ == '__main__':
