@@ -111,15 +111,13 @@ def downloadSpecificVideo(localFilePath, downloadSpecificVideodate, filename):
         awssftp.cwd(Config.awsRootDirectory)
         directories = main.getDirectories(awssftp.listdir())
         downloadSpecificVideodate = downloadSpecificVideodate.__str__()
-        print("testing", "valid filepath")
+
         if directories.__contains__(downloadSpecificVideodate):
-            print("testing", "contains date")
             print(PurePosixPath(Config.awsRootDirectory).joinpath(downloadSpecificVideodate).joinpath(filename))
             if awssftp.exists(PurePosixPath(Config.awsRootDirectory).joinpath(downloadSpecificVideodate).joinpath(filename).__str__()):
                 awssftp.cwd(PurePosixPath(Config.awsRootDirectory).joinpath(downloadSpecificVideodate).__str__())
                 if not Path(localFilePath).joinpath(downloadSpecificVideodate).exists():
                     Path(localFilePath).joinpath(downloadSpecificVideodate).mkdir()
-                print("testing", awssftp.listdir())
                 if filename.endswith(Config.videoFileType):
                     awssftp.get(remotepath=PurePosixPath(Config.awsRootDirectory)
                                 .joinpath(downloadSpecificVideodate).joinpath(filename).__str__(),
@@ -146,13 +144,12 @@ def downloadVideosFromSpecificDate(localFilePath, downloadVideosFromSpecificDate
         awssftp.cwd(Config.awsRootDirectory)
         directories = main.getDirectories(awssftp.listdir())
         downloadVideosFromSpecificDatedate = downloadVideosFromSpecificDatedate.__str__()
-        print("testing", "valid filepath")
+
         if directories.__contains__(downloadVideosFromSpecificDatedate):
-            print("testing","contains date")
             awssftp.cwd(PurePosixPath(Config.awsRootDirectory).joinpath(downloadVideosFromSpecificDatedate).__str__())
             if not Path(localFilePath).joinpath(downloadVideosFromSpecificDatedate).exists():
                 Path(localFilePath).joinpath(downloadVideosFromSpecificDatedate).mkdir()
-            print("testing",awssftp.listdir())
+
             for file in awssftp.listdir():
                 if file.endswith(Config.videoFileType):
                     awssftp.get(remotepath=PurePosixPath(Config.awsRootDirectory)
