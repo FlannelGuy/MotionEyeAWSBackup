@@ -63,24 +63,24 @@ def downloadAll(localFilePath):
 
 def help():
     print("""Help Menu
-        help - print this message.""")
+        help - print this message.
+        list, ls - lists the dates that have videos on the AWS SFTP.
+            param 1 - (optional) <date>:  date in format YYYY-MM-DD, alters 'ls' or 'list' behavior by listing videos 
+            for download for that date.""")
     downloadHelp()
 
 
 def downloadHelp():
-    print("""
-            'download' requires up to four parameters.
+    print("""\t\t'download' - downloads all or specific videos depending on parameters. Requires up to four parameters.
              param 1 - 
+                '-f': designate the local filepath to download files, no download commands will work until a valid local
+                    filepath to a directory is provided with this parameter.
+                    param 1 - complete file path (don't escape any slashes or characters)
                 '-a': downloads all available videos in their respective directories, locally
-                '-l': (optional) <date>: list the dates available for download
-                    param 2 - date in format YYYY-MM-DD, alters '-l' behavior by listing videos for download for that date.
                 '-s': download all videos from a <s>pecific date, or specific video from specific date. ( see param's )
-                    param 2 - date in format YYYY-MM-DD (downloads all videos from that date if param 3 isn't provided )
-                    param 3 - the video filename, including extension ( requires date as second param )
-                '-f': designate the local filepath to download files
-                    param 2 - complete file path (don't escape any slashes or characters)
-                '<date>': downloads all videos from that date
-             """)
+                    param 1 - date in format YYYY-MM-DD (downloads all videos from that date if param 2 isn't provided )
+                    param 2 - the video filename, including extension ( requires date as second param )
+        """)
 
 def checkLocalFilePath(localFilePath):
     if Path(localFilePath).exists():
@@ -92,7 +92,7 @@ def printDates():
     awssftp.cwd(Config.awsRootDirectory)
     directories = main.getDirectories(awssftp.listdir())
     for item in directories:
-        print("item.")
+        print(item)
 
 
 def printVideosFromSpecificDate(printVideosFromSpecificDatedate):
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     print("Welcome. Download and Decrypt your MotionEye videos.")
     userInput = []
     localFilePath = R""
-    while not userInput.__contains__("quit"):
+    while True:
         print(">", end=" ")
         userInput = input().split()
         if len(userInput) != 0:
@@ -186,11 +186,6 @@ if __name__ == '__main__':
                                 printFilePathWarning()
                             else:
                                 downloadAll(localFilePath)
-                        elif len(userInput) == 2 and userInput[1].lower() == "-l":
-                            print(main.getDirectories(awssftp.listdir()))
-                        elif len(userInput) == 3 and userInput[1].lower() == "-l":
-                            date = datetime.date.fromisoformat(userInput[2])
-                            printVideosFromSpecificDate(date.__str__())
                         elif 1 < len(userInput) < 2 and userInput[1].lower() == "-s":
                             downloadHelp()
                         elif len(userInput) == 3 and userInput[1].lower() == "-s":
@@ -215,3 +210,15 @@ if __name__ == '__main__':
                             downloadHelp()
                     except ValueError:
                         downloadHelp()
+
+            elif userInput[0].lower() == "list" or userInput[0].lower() == "ls":
+                if len(userInput) == 1:
+                    print(main.getDirectories(awssftp.listdir()))
+                elif len(userInput) == 2:
+                    date = datetime.date.fromisoformat(userInput[1])
+                    printVideosFromSpecificDate(date.__str__())
+            elif userInput[0].lower() == "quit":
+                awssftp.close()
+                break
+            else:
+                help()
