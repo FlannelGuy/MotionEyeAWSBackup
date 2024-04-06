@@ -115,6 +115,19 @@ if __name__ == '__main__':
         awssftp.cwd(currentRemoteFullDirectoryPath)
         awssftp.put(localpath=localFullFileName,
                     remotepath=filename)
+    print("done.")
+    print(f"deleting videos older than {Config.deleteAfterDays} days.")
+    dateThreshold = (datetime.datetime.today() - datetime.timedelta(days=Config.deleteAfterDays)).date()
 
+    awssftp.cwd(Config.awsRootDirectory)
+    currentDateDirectories = getDirectories(awssftp.listdir())
+    date_format = '%Y-%m-%d'
+
+    for folder in currentDateDirectories:
+        dateInQuestion = datetime.datetime.strptime(folder, date_format).date()
+        if dateInQuestion < dateThreshold:
+            print(f"removing all videos from{dateInQuestion.__str__()}")
+            awssftp.execute(f"rm -rf {Config.awsRootDirectory}/{dateInQuestion.__str__()}")
+    print("done.")
     awssftp.close()
     motionEyeFtp.close()
