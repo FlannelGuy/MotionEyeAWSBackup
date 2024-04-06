@@ -11,4 +11,5 @@ class Config:
     awsKey = R""
     videoEncryptionKey = R""
     videoFileType = ""
+    deleteAfterDays = 7
 
